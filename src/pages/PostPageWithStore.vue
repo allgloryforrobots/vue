@@ -3,7 +3,8 @@
     <h1>Страница с постами</h1>
 
     <MyInput
-        v-model="searchQuery"
+        :model-value="searchQuery"
+        @update:model-value="setSearchQuery"
         placeholder="Поиск..."
         v-focus
     />
@@ -15,7 +16,8 @@
         Создать пост
       </MyButton>
       <MySelect
-          v-model="selectedSort"
+          :model-value="selectedSort"
+          @update:model-value="setSelectedSort"
           :options="sortOptions"
       />
     </div>
@@ -45,12 +47,6 @@
     >
     </div>
 
-    <!--    <PostPages-->
-    <!--        @changePage="changePage"-->
-    <!--        :total-pages="totalPages"-->
-    <!--        :page="page"-->
-    <!--    />-->
-
   </div>
 </template>
 
@@ -59,10 +55,9 @@ import PostForm from '@/components/PostForm.vue'
 import PostList from '@/components/PostList.vue'
 import MyDialog from '@/components/UI/MyDialog.vue'
 import MyButton from '@/components/UI/MyButton.vue'
-import axios from 'axios'
 import MySelect from '@/components/UI/MySelect.vue'
-import MyInput from '@/components/UI/MyInput.vue';
-// import PostPages from '@/components/PostPages.vue'
+import MyInput from '@/components/UI/MyInput.vue'
+import {mapState, mapGetters, mapActions, mapMutations} from 'vuex'
 
 export default {
 
@@ -73,28 +68,24 @@ export default {
     MyDialog,
     PostList,
     PostForm,
-    // PostPages
   },
 
   data() {
-    return {
-      posts: [],
-      dialogVisible: false,
-      isPostsLoading: false,
-      selectedSort: '',
-      searchQuery: '',
-      page: 1,
-      limit: 10,
-      totalPages: 0,
-      sortOptions: [
-        {value: 'title', name: 'По названию'},
-        {value: 'body', name: 'По описанию'},
-      ]
-    }
+   return {
+     dialogVisible: false
+   }
   },
 
   methods: {
-
+    ...mapActions({
+      loadMorePosts: 'post/loadMorePosts',
+      fetchPosts: 'post/loadMorePosts'
+    }),
+    ...mapMutations({
+      setPage: 'post/setPage',
+      setSearchQuery: 'post/setSearchQuery',
+      setSelectedSort: 'post/setSelectedSort'
+    }),
     createPost(post) {
       this.posts.push(post)
       this.dialogVisible = false
@@ -105,92 +96,28 @@ export default {
     showDialog() {
       this.dialogVisible = true
     },
-    async fetchPosts() {
-      this.isPostsLoading = true
-      try {
-        const response = await axios.get(
-            `https://jsonplaceholder.typicode.com/posts`,
-            {
-              params: {
-                _page: this.page,
-                _limit: this.limit
-              }
-            }
-        )
-        this.posts = response.data
-        this.totalPages = Math.ceil(response.headers['x-total-count'] / this.limit)
-      } catch (e) {
-        alert('Ошибка')
-      } finally {
-        this.isPostsLoading = false
-      }
-    },
-    async loadMorePosts() {
-      try {
-        this.page += 1
-        const response = await axios.get(
-            `https://jsonplaceholder.typicode.com/posts`,
-            {
-              params: {
-                _page: this.page,
-                _limit: this.limit
-              }
-            }
-        )
-        this.posts = [...this.posts, ...response.data]
-        this.totalPages = Math.ceil(response.headers['x-total-count'] / this.limit)
-      } catch (e) {
-        alert('Ошибка')
-      }
-    },
-    // changePage(pageNumber) {
-    //   this.page = pageNumber
-    // }
-    // observerController() {
-    //   const options = {
-    //     rootMargin: "0px",
-    //     threshold: 1.0,
-    //   }
-    //   const callback = (entries) => {
-    //     if (entries[0].isIntersecting && this.page < this.totalPages) {
-    //       this.loadMorePosts()
-    //     }
-    //   }
-    //   const observer = new IntersectionObserver(callback, options)
-    //   observer.observe(this.$refs.observer)
-    // }
 
   },
 
   mounted() {
     this.fetchPosts()
-    // this.observerController()
   },
 
   computed: {
-    sortedPosts() {
-      return [...this.posts].sort((post1, post2) => {
-        return post1[this.selectedSort]?.localeCompare(post2[this.selectedSort])
-      })
-    },
-    sortedAndSearchedPosts() {
-      return this.sortedPosts.filter(
-          post => post.title.toLowerCase().includes(this.searchQuery.toLowerCase())
-      )
-    }
-  },
-
-  watch: {
-    // selectedSort() {
-    //   this.posts.sort((post1, post2) => {
-    //     return post1[this.selectedSort]?.localeCompare(post2[this.selectedSort])
-    //   })
-    // }
-
-    // функция-наблюдатель срабатывает на изменение переменной page
-    // page() {
-    //   this.fetchPosts()
-    // }
+    ...mapState({
+      posts: state => state.post.posts,
+      isPostsLoading: state => state.post.isPostsLoading,
+      selectedSort: state => state.post.selectedSort,
+      searchQuery: state => state.post.searchQuery,
+      page: state => state.post.page,
+      limit: state => state.post.limit,
+      totalPages: state => state.post.totalPages,
+      sortOptions: state => state.post.sortOptions,
+    }),
+    ...mapGetters({
+      sortedPosts: 'post/sortedPosts',
+      sortedAndSearchedPosts: 'post/sortedAndSearchedPosts'
+    })
   }
 
 }

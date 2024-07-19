@@ -106,8 +106,8 @@ export default {
       this.dialogVisible = true
     },
     async fetchPosts() {
-      this.isPostsLoading = true
       try {
+        this.isPostsLoading = true
         const response = await axios.get(
             `https://jsonplaceholder.typicode.com/posts`,
             {

@@ -4,6 +4,7 @@ import PostPage from '@/pages/PostPage.vue'
 import AboutPage from '@/pages/AboutPage.vue'
 import PostIdPage from '@/pages/PostIdPage.vue';
 import PostPageWithStore from '@/pages/PostPageWithStore.vue';
+import PostPageCompositionApi from '@/pages/PostPageCompositionApi.vue'
 
 const routes = [
     { path: '/', component: Main },
@@ -11,6 +12,7 @@ const routes = [
     { path: '/about', component: AboutPage },
     { path: '/posts/:id', component: PostIdPage },
     { path: '/store', component: PostPageWithStore },
+    { path: '/composition', component: PostPageCompositionApi },
 ]
 
 export const router = createRouter({
